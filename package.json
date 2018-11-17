@@ -1,0 +1,15 @@
+{
+  "name": "wsserver",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "gpp -o esbot.bin esbot.c && chmod +x esbot.bin && ./esbot.bin"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ws": "^6.1.0"
+  }
+}

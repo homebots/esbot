@@ -1,0 +1,5 @@
+build
+node_modules
+.vscode
+esbot.code-workspace
+.DS_Store

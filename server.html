@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>ESBot</title>
+</head>
+<body>
+  <form onsubmit="esbot.doSubmit(arguments[0])">
+    <input type="text" id="commandInput" />
+    <button type="submit">run</button>
+  </form>
+  <div>
+    <button onclick="esbot.doToggle(0)">toggle 0</button>
+    <button onclick="esbot.doToggle(2)">toggle 2</button>
+  </div>
+  <pre id="output"></pre>
+  <script src="esbot.js"></script>
+</body>
+</html>
