@@ -1,78 +1,75 @@
 #include <Arduino.h>
 #include <WebSocketsClient.h>
 #include <Hash.h>
+#include "./pin-controller.cpp"
+#include "./ticker.cpp"
 #include "./debug.h"
 
-const char* SERVER_URL = "192.168.1.103";
-
-typedef void (*SocketConnectHandler)(WebSocketsClient webSocket);
-typedef void (*SocketMessageHandler)(WebSocketsClient webSocket, uint8_t* payload, size_t length);
-
-SocketConnectHandler _onConnectCb = NULL;
-SocketConnectHandler _onDisconnectCb = NULL;
-SocketMessageHandler _onMessageCb = NULL;
+typedef void (*SocketMessageHandler)(uint8_t* message);
 
 class SocketController {
+  protected:
+    WebSocketsClient *webSocket;
+    Ticker *pingTicker;
+    SocketMessageHandler _onMessage;
+
   public:
-    WebSocketsClient webSocket;
-
-    SocketController() {}
-
-    void onConnect(SocketConnectHandler handler) {
-      _onConnectCb = handler;
+    SocketController(WebSocketsClient *webSocket) {
+      Ticker pingTicker(5000);
+      this->pingTicker = &pingTicker;
+      this->webSocket = webSocket;
     }
 
-    void onDisconnect(SocketConnectHandler handler) {
-      _onDisconnectCb = handler;
-    }
+    void setup(const char* host, int port) {
+      webSocket->begin(host, port, "/");
+      webSocket->setReconnectInterval(5000);
+      webSocket->onEvent([&](WStype_t type, uint8_t* message, size_t length) {
+        DEBUG.printf("[>>>>>> SOCKET] Socket event %d\n", type);
 
-    void onMessage(SocketMessageHandler handler) {
-      _onMessageCb = handler;
-    }
+        switch(type) {
+          case WStype_DISCONNECTED:
+            this->onDisconnect();
+            this->pingTicker->stop();
+            break;
 
-    void setup() {
-      DEBUG.println("Start socket");
+          case WStype_CONNECTED:
+            this->onConnect(message);
+            delay(100);
+            this->pingTicker->start();
+            break;
 
-      this->webSocket.onEvent(
-        [&](WStype_t type, uint8_t* payload, size_t length) {
-          DEBUG.printf("Socket Event %d", type);
-          DEBUG.println();
-
-          if (type == WStype_DISCONNECTED) {
-            DEBUG.println("Disconnected");
-            if (_onDisconnectCb != NULL) {
-              _onDisconnectCb(this->webSocket);
-            }
-            return;
-          }
-
-          hexdump(payload, length);
-
-          if (type == WStype_CONNECTED) {
-            DEBUG.println("Connected");
-            if (_onConnectCb != NULL) {
-              _onConnectCb(this->webSocket);
-            }
-            return;
-          }
-
-          if (type == WStype_TEXT) {
-            DEBUG.println("Text received");
-
-            if (_onMessageCb != NULL) {
-              _onMessageCb(this->webSocket, payload, length);
-            }
-          }
-        });
-
-      this->webSocket.setReconnectInterval(5000);
-    }
-
-    void connect() {
-      this->webSocket.begin(SERVER_URL, 80, "/");
+          case WStype_TEXT:
+            this->onMessageReceived(message);
+            break;
+        }
+      });
     }
 
     void loop() {
-      this->webSocket.loop();
+      this->webSocket->loop();
+      this->pingTicker->loop();
+    }
+
+    void onConnect(uint8_t* message) {
+      DEBUG.printf("[>>>>>] Connected to %s!\n", message);
+      this->webSocket->sendTXT("bot");
+    }
+
+    void onDisconnect() {
+      DEBUG.printf("[>>>>>] Disconnected!\n");
+    }
+
+    void onMessage(SocketMessageHandler handler) {
+      this->_onMessage = handler;
+    }
+
+  private:
+    void onMessageReceived(uint8_t* message) {
+      DEBUG.printf("[>>>>>] message: %s\n", message);
+      this->_onMessage(message);
+    }
+
+    void ping() {
+      this->webSocket->sendTXT("bot ping");
     }
 };

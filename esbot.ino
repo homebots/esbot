@@ -1,50 +1,51 @@
 #include <Arduino.h>
-#include <string.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266WiFiMulti.h>
 #include <WebSocketsClient.h>
-#include "./lib/pin-controller.cpp"
+#include <Hash.h>
 #include "./lib/socket-controller.cpp"
 #include "./lib/wifi-controller.cpp"
+#include "./lib/instruction-parser.cpp"
 #include "./debug.h"
 
-PinController pin2(2);
-SocketController socketCtrl;
+WebSocketsClient webSocket;
+SocketController socketCtrl(&webSocket);
 WifiController wifiCtrl("Mate_Amargo", "ComAguaQuent3");
+PinController pin0(0);
+PinController pin2(2);
+InstructionParser parser;
 
 void setup() {
-  DEBUG.begin(115200);
-  // DEBUG.setDebugOutput(true);
-  for(uint8_t t = 4; t > 0; t--) {
-    DEBUG.printf("[SETUP] BOOT WAIT %d...\n", t);
-    DEBUG.flush();
-    delay(1000);
-  }
+	DEBUG.begin(115200);
 
-  pin2.toOutput();
-  pin2.blink(3, 100);
+	for(uint8_t t = 4; t > 0; t--) {
+		DEBUG.printf("[SETUP] BOOT WAIT %d...\n", t);
+		DEBUG.flush();
+		delay(1000);
+	}
 
   wifiCtrl.onConnecting([]() {
-    pin2.blinkFade((uint8_t)1, (uint8_t)16);
-  });
-
-  socketCtrl.onConnect([](WebSocketsClient webSocket) {
-    webSocket.sendTXT("bot");
-    pin2.blink(3, 250);
-  });
-
-  socketCtrl.onDisconnect([](WebSocketsClient webSocket) {
-    pin2.blinkFade(2, 32);
-  });
-
-  socketCtrl.onMessage([](WebSocketsClient webSocket, uint8_t* payload, size_t length) {
-    webSocket.sendTXT("OK");
-    pin2.blink(3, 250);
+    DEBUG.write(".");
   });
 
   wifiCtrl.connect();
-  socketCtrl.setup();
-  socketCtrl.connect();
+  socketCtrl.setup("192.168.1.103", 80);
+
+  socketCtrl.onMessage([](uint8_t* message) {
+    Instruction i = parser.parse(message);
+    long value = -1;
+    char* result;
+    PinController* pin;
+
+    switch(i.instruction) {
+      case DoNoop:
+        break;
+
+      case DoRead:
+        break;
+    }
 }
 
 void loop() {
-  socketCtrl.loop();
+	socketCtrl.loop();
 }

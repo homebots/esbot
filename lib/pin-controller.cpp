@@ -1,18 +1,15 @@
 #include <Arduino.h>
 #include "./debug.h"
+#include "./instruction.h"
 
-int ANALOG_MAX = 256;
+int ANALOG_MAX = 200;
 
 class PinController {
   private:
     uint8_t pin;
 
   public:
-    PinController(uint8_t pin = 0) {
-      this->setPin(pin);
-    }
-
-    void setPin(uint8_t pin) {
+    PinController(uint8_t pin) {
       this->pin = pin;
     }
 
@@ -25,13 +22,11 @@ class PinController {
     }
 
     void on() {
-      // DEBUG.printf("%d on", this->pin);
       this->toOutput();
       digitalWrite(this->pin, HIGH);
     }
 
     void off() {
-      // DEBUG.printf("%d off", this->pin);
       this->toOutput();
       digitalWrite(this->pin, LOW);
     }
@@ -96,10 +91,17 @@ class PinController {
     }
 
     int read() {
+      this->toInput();
       return digitalRead(this->pin);
     }
 
     int readAnalog() {
+      this->toInput();
       return analogRead(this->pin);
+    }
+
+    void writeAnalog(uint8_t value) {
+      this->toOutput();
+      analogWrite(this->pin, value);
     }
 };

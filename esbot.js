@@ -17,6 +17,10 @@
       esbot.socket.send(`C! ${message}`);
     },
 
+    ping() {
+      esbot.send('ping');
+    },
+
     doSubmit (event) {
       event.preventDefault();
 
@@ -29,14 +33,23 @@
     },
 
     doToggle(pin) {
-      esbot.send(`toggle ${pin}`);
+      esbot.send(`${pin}`);
     },
 
     connect() {
       const socket = new WebSocket('ws://localhost:80');
       esbot.socket = socket;
 
-      socket.onmessage = (event) => esbot.output(event.data);
+      socket.onmessage = (event) => {
+        const message = event.data;
+        if (message === 'bot ping') {
+          esbot.ping();
+          esbot.output('pong');
+          return;
+        }
+
+        esbot.output(message);
+      }
 
       socket.onopen = () => {
         esbot.output('Connected');
