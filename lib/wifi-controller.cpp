@@ -15,15 +15,15 @@ class WifiController {
     }
 
     void setup(const char* SSID, const char* key) {
-      DEBUG.printf("Connect WiFI to %s %s", SSID, key);
-      DEBUG.println();
+      DEBUG("Connect WiFI to %s %s", SSID, key);
+      DEBUG("\n");
 
       this->wifi.addAP(SSID, key);
     }
 
     void connect() {
       while (this->wifi.run() != WL_CONNECTED) {
-        DEBUG.write(".");
+        DEBUG(".");
         delay(100);
 
         if (this->onConnectingCb != NULL) {
@@ -31,7 +31,7 @@ class WifiController {
         }
       }
 
-      DEBUG.println();
+      DEBUG("\n");
     }
 
     void onConnecting(OnConnectingHandler handler) {

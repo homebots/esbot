@@ -4,7 +4,7 @@ const WebSocket = require('ws');
 
 const clients = {};
 
-const server = http.createServer(function(request, response) {
+const httpServer = http.createServer(function(request, response) {
   if (request.url === '/') {
     fs.createReadStream('./server.html').pipe(response);
     return;
@@ -19,17 +19,23 @@ const server = http.createServer(function(request, response) {
   response.end('Not found');
 });
 
+httpServer.listen(8080);
 
-const webSocket = new WebSocket.Server({
+const botSocket = new WebSocket.Server({
   port: 80,
-  server
+  httpServer
 });
 
-server.listen(8080);
+const clientSocket = new WebSocket.Server({
+  port: 81,
+  httpServer,
+  path: '/client'
+});
+
 console.log('Server running at http://localhost:8080/')
 console.log('WebSockets running at http://localhost:80/')
 
-webSocket.on('connection', function(connection) {
+botSocket.on('connection', function(connection) {
   connection.on('message', function(data) {
     if (data === 'bot') {
       console.log('bot connected');
@@ -42,33 +48,35 @@ webSocket.on('connection', function(connection) {
       return;
     }
 
-    // console.log(data);
+    if (clients.web) {
+      console.log('send to web', data);
+      clients.web.send(data);
+    }
+  });
 
+  connection.on('close', () => clients.bot = null);
+});
+
+clientSocket.on('connection', function (connection) {
+  connection.on('message', function(data) {
     try {
-      if (data === 'C! web') {
+      if (data === '!!web') {
         console.log('web connected');
         clients.web = connection;
         return;
       }
 
-      // web > bot
-      if (data.startsWith('C!')) {
-        const command = data.slice(3).trim();
-        console.log(`send to bot: "${command}"`);
-
-        if (clients.bot) {
-          clients.bot.send(command);
-        }
+      if (!clients.bot) {
+        console.log(`no bots available"`);
         return;
       }
 
-      // bot > web
-      if (clients.web) {
-        console.log(`send to web: "${data}"`);
-        clients.web.send(data);
-      }
+      console.log('send to bot', data);
+      clients.bot.send(data);
     } catch (e) {
       console.error(e.message);
     }
   });
+
+  connection.on('close', () => clients.web = null);
 });

@@ -5,45 +5,48 @@
 #include <Hash.h>
 #include "./lib/socket-controller.cpp"
 #include "./lib/wifi-controller.cpp"
-#include "./lib/instruction-parser.cpp"
+#include "./lib/bot.cpp"
 #include "./debug.h"
 
 WebSocketsClient webSocket;
 SocketController socketCtrl(&webSocket);
 WifiController wifiCtrl("Mate_Amargo", "ComAguaQuent3");
-PinController pin0(0);
-PinController pin2(2);
-InstructionParser parser;
 
 void setup() {
-	DEBUG.begin(115200);
+	DEBUG_OUTPUT.begin(115200);
 
 	for(uint8_t t = 4; t > 0; t--) {
-		DEBUG.printf("[SETUP] BOOT WAIT %d...\n", t);
-		DEBUG.flush();
+		DEBUG("[SETUP] BOOT WAIT %d...\n", t);
+		DEBUG_OUTPUT.flush();
 		delay(1000);
 	}
 
   wifiCtrl.onConnecting([]() {
-    DEBUG.write(".");
+    DEBUG(".");
   });
 
   wifiCtrl.connect();
   socketCtrl.setup("192.168.1.103", 80);
 
   socketCtrl.onMessage([](uint8_t* message) {
-    Instruction i = parser.parse(message);
-    long value = -1;
-    char* result;
-    PinController* pin;
+    DEBUG("%s", message);
+    Instruction* i = parseInstruction(message);
 
-    switch(i.instruction) {
-      case DoNoop:
-        break;
+    DEBUG("%d", i->id);
+    i->run();
 
-      case DoRead:
-        break;
+    char* output;
+
+    if (i->id == BiRead) {
+      snprintf(output, 2, "%d%d", BiRead, i->digitalOutput);
+      webSocket.sendBIN((uint8_t*)output, strlen(output));
     }
+
+    if (i->id == BiAnalogRead) {
+      snprintf(output, 2, "%d%ld", BiRead, i->analogOutput);
+      webSocket.sendBIN((uint8_t*)output, strlen(output));
+    }
+  });
 }
 
 void loop() {

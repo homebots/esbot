@@ -7,14 +7,17 @@
   <title>ESBot</title>
 </head>
 <body>
-  <form onsubmit="esbot.doSubmit(arguments[0])">
-    <input type="text" id="commandInput" />
-    <button type="submit">run</button>
+  <form onsubmit="doSubmit(arguments[0])">
+    <label for="pinNumber">Pin:</label>
+    <input type="text" id="pinNumber" />
+
+    <label for="pinValue">Value:</label>
+    <input type="text" id="pinValue" />
+
+    <button type="button" onclick="readPin()">read</button>
+    <button type="button" onclick="writeToPin()">write</button>
   </form>
-  <div>
-    <button onclick="esbot.doToggle(0)">toggle 0</button>
-    <button onclick="esbot.doToggle(2)">toggle 2</button>
-  </div>
+
   <pre id="output"></pre>
   <script src="esbot.js"></script>
 </body>

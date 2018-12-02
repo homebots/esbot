@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "gpp -o esbot.bin esbot.c && chmod +x esbot.bin && ./esbot.bin"
+    "test": "gpp -o esbot.bin esbot.c && chmod +x esbot.bin && ./esbot.bin",
+    "tdd": "nodemon --ext cpp,h --exec bash test.sh --watch lib --watch test"
   },
   "keywords": [],
   "author": "",
