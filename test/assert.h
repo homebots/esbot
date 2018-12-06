@@ -1,3 +1,10 @@
+#ifndef _ASSERT_H_
+#define _ASSERT_H_
+
+#ifndef DEBUG
+#define DEBUG(...)
+#endif
+
 #include <string.h>
 #include <stdlib.h>
 #include <iostream>
@@ -153,3 +160,5 @@ Expectation<T> expect(T actual) {
   Expectation<T> e(actual);
   return e;
 }
+
+#endif

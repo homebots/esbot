@@ -1,16 +1,7 @@
 {
-  "name": "wsserver",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "@homebots/esp01",
+  "version": "0.0.0",
   "scripts": {
-    "test": "gpp -o esbot.bin esbot.c && chmod +x esbot.bin && ./esbot.bin",
-    "tdd": "nodemon --ext cpp,h --exec bash test.sh --watch lib --watch test"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "ws": "^6.1.0"
+    "tdd": "nodemon --ext cpp,h --exec bash test.sh --watch src --watch test"
   }
 }

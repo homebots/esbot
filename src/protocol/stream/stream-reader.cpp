@@ -1,6 +1,5 @@
-#ifndef DEBUG
-#define DEBUG(...)
-#endif
+#ifndef _STREAM_READER_
+#define _STREAM_READER_
 
 void copyBytes(unsigned char* target, unsigned char* source, size_t amount) {
   for (int i = 0; i < amount; i++) {
@@ -25,8 +24,8 @@ class StreamReader {
       return chars;
     }
 
-    int readByte() {
-      int number = (int)*stream;
+    char readByte() {
+      unsigned char number = (unsigned char)*stream;
       stream++;
 
       DEBUG("Read char %d\n", number);
@@ -34,24 +33,12 @@ class StreamReader {
     }
 
     bool readBool() {
-      char number = (char)*stream++;
+      char number = (char)*stream;
+      stream++;
       bool value = number == 0x01;
 
       DEBUG("Read bool %d\n", value);
       return value;
-    }
-
-    int readNumber() {
-      unsigned char* bytes = (unsigned char*) malloc(5);
-      *bytes = 0x30;
-      bytes[4] = 0x00;
-      copyBytes(bytes + 1, stream, 3);
-      stream += 3;
-      long number = strtol((const char*)bytes, nullptr, 16);
-      free(bytes);
-
-      DEBUG("Read number %ld\n", number);
-      return number;
     }
 
     int readLong() {
@@ -59,10 +46,12 @@ class StreamReader {
       bytes[4] = 0x00;
       copyBytes(bytes, stream, 4);
       stream += 4;
-      long number = strtol((const char*)bytes, nullptr, 16);
+      long number = strtoul((const char*)bytes, nullptr, 16);
       free(bytes);
 
-      DEBUG("Read long %ld\n", number);
+      DEBUG("Read long %ld from %s\n", number, bytes);
       return number;
     }
 };
+
+#endif

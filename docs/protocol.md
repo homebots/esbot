@@ -20,7 +20,6 @@ Each message sent to esbot has the shape of:
 | byte    | 0..255 |
 | bool    | 0 or 1 |
 | str     | string |
-| number  | 0..4095 |
 | long    | 0..65535 |
 
 ## Instructions
