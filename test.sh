@@ -1,6 +1,6 @@
 rm tmp/*.bin || true
 
-INCLUDE_PATH="-I $PWD/test/"
+INCLUDE_PATH="-I $PWD/test/ -I $PWD/src"
 
 for spec in $(find ./src -iname "$SPEC*.spec.cpp" -type f);
 do

@@ -1,4 +1,4 @@
-#include "./wifi-controller.cpp"
+#include "./loop.cpp"
 #include "./protocol/main.cpp"
 #include "./debug.h"
 
@@ -7,14 +7,21 @@
 // const char WIFI_KEY = ""
 // #endif
 
-class MainController {
+class MainController: public LoopCallable {
   public:
     WebSocketsClient webSocket;
     ESP8266WiFiMulti wifi;
+    Instructions input;
 
   void setup() {
     this->setupWifi();
     this->setupWebSocket();
+
+    GlobalLoop.add(this);
+  }
+
+  void loop() {
+    webSocket.loop();
   }
 
   void setupWebSocket() {
@@ -34,8 +41,8 @@ class MainController {
           break;
       }
     });
-
   }
+
   void setupWifi() {
     wifi.addAP("HomeBots", "HomeBots");
     wifi.addAP(WIFI_SSID, WIFI_KEY);
@@ -51,28 +58,23 @@ class MainController {
   void sendIdentity() {
     unsigned char macAddress[18];
     WiFi.macAddress().getBytes(macAddress, 18);
-    webSocket.sendTXT(strcat((char*) "bot::", (char*) macAddress));
+    webSocket.sendTXT(unsigned char*) (strcat((char*) "bot::", (char*) macAddress)));
   }
 
   void onMessageReceived(uint8_t* message) {
-    char output[16];
-    Instruction* i = parseInstruction(message);
+    class Output: public Callable {
+      WebSocketsClient* s;
+      Output(WebSocketsClient* socket):
+        s(socket) {}
 
-    DEBUG("Instruction %d\n", i->id);
-    i->run();
-
-    if (i->id == BiRead) {
-      sprintf(output, "%d %d", BiRead, i->digitalOutput);
-      webSocket.sendBIN((uint8_t*)output, strlen(output));
+      void call(unsigned char instruction, unsigned char* bytes) {
+        switch (instruction) {
+          default:
+            s.sendBIN((uint8_t*)bytes, strlen((const char*)bytes));
+        }
+      }
     }
 
-    if (i->id == BiAnalogRead) {
-      sprintf(output, "%d %ld", BiAnalogRead, i->analogOutput);
-      webSocket.sendBIN((uint8_t*)output, strlen(output));
-    }
-  }
-
-  void loop() {
-    webSocket.loop();
+    input.parseInstruction(stream, output);
   }
 };

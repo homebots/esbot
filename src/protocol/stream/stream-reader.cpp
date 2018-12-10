@@ -1,5 +1,6 @@
-#ifndef _STREAM_READER_
-#define _STREAM_READER_
+#ifndef DEBUG
+#define DEBUG(...)
+#endif
 
 void copyBytes(unsigned char* target, unsigned char* source, size_t amount) {
   for (int i = 0; i < amount; i++) {
@@ -53,5 +54,3 @@ class StreamReader {
       return number;
     }
 };
-
-#endif

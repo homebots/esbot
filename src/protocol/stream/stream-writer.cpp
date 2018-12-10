@@ -1,3 +1,7 @@
+#ifndef DEBUG
+#define DEBUG(...)
+#endif
+
 #include <stdio.h>
 
 struct StreamNode {
@@ -13,8 +17,7 @@ class StreamWriter {
 
   public:
     StreamWriter() {
-      head = new StreamNode;
-      current = head;
+      reset();
     }
 
     void writeByte(unsigned char value) {
@@ -66,7 +69,6 @@ class StreamWriter {
     }
 
     void push(StreamNode* next) {
-      // DEBUG(">> %ld %c\n", next, next->value);
       next->previous = current;
       current->next = next;
       current = next;
@@ -86,8 +88,14 @@ class StreamWriter {
         delete node->previous;
       }
 
-      // DEBUG("%d> %s\n", length, bytes);
+      reset();
 
       return bytes;
+    }
+
+    void reset() {
+      head = new StreamNode;
+      current = head;
+      length = 0;
     }
 };

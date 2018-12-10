@@ -1,28 +1,25 @@
-#include <Arduino.h>
-#include "./debug.h"
+#include "loop.h"
+#include "callable.h"
 
-#ifndef _TICKER_
-#define _TICKER_
+#ifndef _TIMER_
+#define _TIMER_
 
-typedef void (*TickerCallback)();
-
-class Timer {
+class Timer: public LoopCallable {
   protected:
-    int _interval;
-    TickerCallback _onTick = NULL;
-
-  public:
+    int interval;
     int nextTick;
     bool running = false;
+    Callable* callable;
 
-    Timer(int interval): _interval(interval) {}
-
-    void onTick(TickerCallback onTick) {
-      _onTick = onTick;
-    }
+  public:
+    Timer(int interval, Callable* callback):
+      interval(interval),
+      callable(callback) {
+        GlobalLoop.add(this);
+      }
 
     void start() {
-      nextTick = millis() + _interval;
+      nextTick = millis() + interval;
       running = true;
     }
 
@@ -30,16 +27,16 @@ class Timer {
       running = false;
     }
 
-    void setInterval(int interval) {
-      _interval = interval;
+    void setInterval(int newInterval) {
+      interval = newInterval;
     }
 
     void loop() {
       if (this->running == false) return;
 
       if (millis() > nextTick) {
-        nextTick += _interval;
-        this->_onTick();
+        nextTick += interval;
+        this->callable->call();
       }
     }
 };

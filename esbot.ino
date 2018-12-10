@@ -3,7 +3,7 @@
 #include <ESP8266WiFiMulti.h>
 #include <WebSocketsClient.h>
 
-#include "src/main-controller.cpp";
+#include "src/main.cpp";
 
 MainController ctrl;
 
@@ -12,5 +12,5 @@ void setup() {
 }
 
 void loop() {
-  ctrl.loop();
+  GlobalLoop.loop();
 }

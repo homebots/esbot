@@ -1,4 +1,4 @@
-#define DEBUG(...) printf(__VA_ARGS__);
+// #define DEBUG(...) printf(__VA_ARGS__);
 
 #include <string.h>
 #include "assert.h"
@@ -59,6 +59,22 @@ int main() {
 
       unsigned char* output = writer.getStream();
       expect(output).toBe(expected);
+    });
+
+    it("should reset after returning byte stream", []{
+      StreamWriter writer;
+      const char* dead = "dead";
+      const char* beef = "beef";
+
+      writer.writeString(dead);
+
+      unsigned char* outputOne = writer.getStream();
+      expect(outputOne).toBe(dead);
+
+      writer.writeString(beef);
+
+      unsigned char* outputTwo = writer.getStream();
+      expect(outputTwo).toBe(beef);
     });
   });
 

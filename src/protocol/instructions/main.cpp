@@ -1,9 +1,6 @@
-#ifndef _PROTOCOL_INSTRUCTIONS_
-#define _PROTOCOL_INSTRUCTIONS_
+#ifndef _INSTRUCTIONS_
+#define _INSTRUCTIONS_
 
-#include "./debug.cpp"
-#include "./read.cpp"
-#include "./reset.cpp"
-#include "./write.cpp"
+#include "./instructions.cpp"
 
 #endif
