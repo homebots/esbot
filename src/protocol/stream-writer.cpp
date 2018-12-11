@@ -1,7 +1,12 @@
+#ifndef _STREAM_WRITER_
+#define _STREAM_WRITER_
+
 #ifndef DEBUG
 #define DEBUG(...)
 #endif
 
+#include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 struct StreamNode {
@@ -99,3 +104,5 @@ class StreamWriter {
       length = 0;
     }
 };
+
+#endif

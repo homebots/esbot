@@ -1,6 +1,5 @@
-// #define DEBUG(...) printf(__VA_ARGS__)
 #include "assert.h"
-#include "./loop.cpp"
+#include "loop.cpp"
 
 int main() {
   describe("GlobalLoop", []{

@@ -1,7 +1,7 @@
 // #define DEBUG(...) printf(__VA_ARGS__);
 
 #include "assert.h"
-#include "./stream-reader.cpp"
+#include "protocol/stream/main.cpp"
 
 int main() {
   describe("StreamReader", [] {

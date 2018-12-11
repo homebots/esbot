@@ -6,20 +6,24 @@ typedef enum {
     WStype_BIN,
 } WStype_t;
 
-typedef void (*OnEventCallback)(WStype_t type, uint8_t * payload, size_t length);
+typedef std::function<void (WStype_t type, uint8_t * payload, size_t length)> WebSocketClientEvent;
 
 class WebSocketsClient {
-  OnEventCallback _cb;
+  WebSocketClientEvent _cb;
 
   public:
+    unsigned char* lastBIN;
+
     void begin(const char* host, int port, const char* path) {}
     void setReconnectInterval(int interval) {}
-    void onEvent(OnEventCallback cb) {
+    void onEvent(WebSocketClientEvent cb) {
       _cb = cb;
     }
 
     void loop() {}
 
     void sendTXT(unsigned char* bytes) {}
-    void sendBIN(unsigned char* bytes, int length) {}
+    void sendBIN(unsigned char* bytes, int length) {
+      lastBIN = bytes;
+    }
 };

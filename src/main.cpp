@@ -1,11 +1,18 @@
-#include "./loop.cpp"
-#include "./protocol/main.cpp"
-#include "./debug.h"
+#include "loop.cpp"
+#include "protocol/main.cpp"
+#include "debug.h"
 
-// #ifndef WIFI_SSID
-// const char WIFI_SSID = ""
-// const char WIFI_KEY = ""
-// #endif
+#ifndef _ASSERT_CPP_
+#include <Arduino.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266WiFiMulti.h>
+#include <WebSocketsClient.h>
+#endif
+
+#ifndef WIFI_SSID
+const char* WIFI_SSID = "HomeBots";
+const char* WIFI_KEY = "HomeBots";
+#endif
 
 class MainController: public LoopCallable {
   public:
@@ -39,8 +46,13 @@ class MainController: public LoopCallable {
         case WStype_BIN:
           onMessageReceived(message);
           break;
+
+        default:
+          break;
       }
     });
+
+    input.setSocket(&webSocket);
   }
 
   void setupWifi() {
@@ -56,25 +68,12 @@ class MainController: public LoopCallable {
   }
 
   void sendIdentity() {
-    unsigned char macAddress[18];
-    WiFi.macAddress().getBytes(macAddress, 18);
-    webSocket.sendTXT(unsigned char*) (strcat((char*) "bot::", (char*) macAddress)));
+    // unsigned char macAddress[18];
+    // wifi.macAddress().getBytes(macAddress, 18);
+    // webSocket.sendTXT(strcat((char*) "bot::", (char*) macAddress));
   }
 
-  void onMessageReceived(uint8_t* message) {
-    class Output: public Callable {
-      WebSocketsClient* s;
-      Output(WebSocketsClient* socket):
-        s(socket) {}
-
-      void call(unsigned char instruction, unsigned char* bytes) {
-        switch (instruction) {
-          default:
-            s.sendBIN((uint8_t*)bytes, strlen((const char*)bytes));
-        }
-      }
-    }
-
-    input.parseInstruction(stream, output);
+  void onMessageReceived(uint8_t* stream) {
+    input.parseInstruction(stream);
   }
 };

@@ -2,7 +2,7 @@
 
 #include <string.h>
 #include "assert.h"
-#include "./stream-writer.cpp"
+#include "protocol/stream/main.cpp"
 
 int main() {
   describe("StreamWriter", []{

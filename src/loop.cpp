@@ -1,4 +1,10 @@
-#include "./loop.h"
+#ifndef _LOOPER_
+#define _LOOPER_
+
+class LoopCallable {
+  public:
+    virtual void loop(){}
+};
 
 struct Looper {
   int id;
@@ -80,3 +86,5 @@ class Loop {
 };
 
 Loop GlobalLoop;
+
+#endif

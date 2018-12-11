@@ -1,25 +1,12 @@
+#ifndef _INSTRUCTIONS_
+#define _INSTRUCTIONS_
+
 #ifndef DEBUG
 #define DEBUG(...)
 #endif
 
-#include "callable.h"
-#include <stdlib.h>
-
-using namespace std;
-
-// typedef std::function<void (WStype_t type, uint8_t * payload, size_t length)> Foo;
-// typedef void (*WebSocketClientEvent)(WStype_t type, uint8_t * payload, size_t length);
-
-class InstructionResponse: public Callable {
-  public:
-    virtual void call(unsigned char instructionId, unsigned char* output) {}
-};
-
-class InstructionLongResponse: public InstructionResponse {
-  public:
-    virtual void call(unsigned char instructionId, unsigned long output) {}
-};
-
+#include <Arduino.h>
+#include <WebSocketsClient.h>
 
 typedef enum {
   BiNoop = 0x01,
@@ -34,15 +21,24 @@ typedef enum {
   BiDebug = 0x0a,
 } InstructionCode;
 
-
 class Instructions {
   public:
+    WebSocketsClient* webSocket;
+    StreamWriter output;
 
-    void parseInstruction(unsigned char* byteStream, InstructionResponse* callback) {
+    void setSocket(WebSocketsClient* socket) {
+      webSocket = socket;
+    }
+
+    void parseInstruction(unsigned char* byteStream) {
       StreamReader reader(byteStream);
       char id = reader.readByte();
 
       switch (id) {
+        case BiNoop:
+          this->noop();
+          break;
+
         case BiReset:
           this->reset();
           break;
@@ -59,8 +55,7 @@ class Instructions {
         case BiRead:
           this->readPin(
             reader.readByte(),
-            reader.readBool(),
-            callback
+            reader.readBool()
           );
           break;
 
@@ -72,32 +67,58 @@ class Instructions {
       }
     }
 
+    void noop() {
+      output.writeByte(BiNoop);
+      output.writeByte(0x01);
+      sendOutput();
+    }
+
     void reset() {
+      output.writeByte(BiReset);
+      output.writeByte(0x01);
+
+      sendOutput();
       ESP.restart();
     }
 
     void debug(bool enabled) {
+      output.writeByte(BiDebug);
+
       if (enabled) {
         Serial.begin(115200);
+        output.writeByte(0x01);
       } else {
         Serial.end();
+        output.writeByte(0x00);
       }
+
+      sendOutput();
     }
 
-    void readPin(unsigned char pin, unsigned char isAnalog, InstructionResponse* callback) {
+    void readPin(unsigned char pin, unsigned char isAnalog) {
       pinMode(pin, INPUT);
 
       if (isAnalog) {
-        readAnalogPin(pin, (InstructionLongResponse*)callback);
+        readAnalogPin(pin);
       } else {
-        unsigned char value = digitalRead(pin);
-        callback->call(BiRead, &value);
+        readDigitalPin(pin);
       }
     }
 
-    void readAnalogPin(unsigned char pin, InstructionLongResponse* callback) {
-      unsigned long value = analogRead(pin);
-      callback->call(BiRead, value);
+    void readDigitalPin(unsigned char pin) {
+      output.writeByte(BiRead);
+      output.writeBool(false);
+      output.writeByte(digitalRead(pin));
+
+      sendOutput();
+    }
+
+    void readAnalogPin(unsigned char pin) {
+      output.writeByte(BiRead);
+      output.writeBool(true);
+      output.writeNumber(analogRead(pin));
+
+      sendOutput();
     }
 
     void writePin(unsigned char pin, bool isAnalog, long value) {
@@ -116,4 +137,12 @@ class Instructions {
 
       digitalWrite(pin, LOW);
     }
+
+  private:
+    void sendOutput() {
+      unsigned char* bytes = output.getStream();
+      webSocket->sendBIN(bytes, strlen((const char*)bytes));
+    }
 };
+
+#endif

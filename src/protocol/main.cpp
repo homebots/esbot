@@ -6,7 +6,8 @@
 #endif
 
 #include "./timer.cpp"
-#include "./stream/main.cpp"
-#include "./instructions/main.cpp"
+#include "./instructions.cpp"
+#include "./stream/stream-reader.cpp"
+#include "./stream/stream-writer.cpp"
 
 #endif

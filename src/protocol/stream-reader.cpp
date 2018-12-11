@@ -1,5 +1,15 @@
+#ifndef _STREAM_READER_
+#define _STREAM_READER_
+
 #ifndef DEBUG
 #define DEBUG(...)
+#endif
+
+// typedef unsigned int size_t;
+
+#ifndef _ASSERT_CPP_
+#include <stdlib.h>
+#include <string.h>
 #endif
 
 void copyBytes(unsigned char* target, unsigned char* source, size_t amount) {
@@ -54,3 +64,5 @@ class StreamReader {
       return number;
     }
 };
+
+#endif

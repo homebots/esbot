@@ -1,5 +1,5 @@
-#ifndef _ASSERT_H_
-#define _ASSERT_H_
+#ifndef _ASSERT_CPP_
+#define _ASSERT_CPP_
 
 #ifndef DEBUG
 #define DEBUG(...)

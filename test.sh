@@ -2,7 +2,7 @@ rm tmp/*.bin || true
 
 INCLUDE_PATH="-I $PWD/test/ -I $PWD/src"
 
-for spec in $(find ./src -iname "$SPEC*.spec.cpp" -type f);
+for spec in $(find ./test -iname "$SPEC*.spec.cpp" -type f);
 do
   specName=$(basename $spec)
   bin=./tmp/$specName.bin

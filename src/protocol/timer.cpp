@@ -1,20 +1,25 @@
-#include "loop.h"
-#include "callable.h"
+#include "../loop.cpp"
 
 #ifndef _TIMER_
 #define _TIMER_
+
+#ifndef _ASSERT_CPP_
+#include <Arduino.h>
+#include <stdlib.h>
+#include <functional>
+#endif
 
 class Timer: public LoopCallable {
   protected:
     int interval;
     int nextTick;
     bool running = false;
-    Callable* callable;
+    std::function<void()> callback;
 
   public:
-    Timer(int interval, Callable* callback):
+    Timer(int interval, std::function<void()> callback):
       interval(interval),
-      callable(callback) {
+      callback(callback) {
         GlobalLoop.add(this);
       }
 
@@ -36,7 +41,7 @@ class Timer: public LoopCallable {
 
       if (millis() > nextTick) {
         nextTick += interval;
-        this->callable->call();
+        this->callback();
       }
     }
 };
