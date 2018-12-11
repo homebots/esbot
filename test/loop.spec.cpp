@@ -2,16 +2,24 @@
 #include "loop.cpp"
 
 int main() {
-  describe("GlobalLoop", []{
+  describe("Loop", []{
+    beforeEach([]{
+      Loop::global = new Loop;
+    });
+
+    afterEach([]{
+      delete Loop::global;
+    });
+
     describe("add and remove a callable object", []{
       LoopCallable noop;
-      int id = GlobalLoop.add(&noop);
+      int id = Loop::global->add(&noop);
 
       expect(id).toBe(1);
-      expect(GlobalLoop.length).toBe(1);
+      expect(Loop::global->length).toBe(1);
 
-      GlobalLoop.remove(id);
-      expect(GlobalLoop.length).toBe(0);
+      Loop::global->remove(id);
+      expect(Loop::global->length).toBe(0);
     });
 
     describe("call stored loop objects", []{
@@ -29,28 +37,28 @@ int main() {
       Increment incA(&a);
       Increment incB(&b);
 
-      int idA = GlobalLoop.add(&incA);
-      int idB = GlobalLoop.add(&incB);
+      int idA = Loop::global->add(&incA);
+      int idB = Loop::global->add(&incB);
 
-      expect(GlobalLoop.length).toBe(2);
+      expect(Loop::global->length).toBe(2);
 
-      GlobalLoop.loop();
+      Loop::global->loop();
       expect(a).toBe(1);
       expect(b).toBe(2);
 
-      GlobalLoop.loop();
+      Loop::global->loop();
       expect(a).toBe(2);
       expect(b).toBe(3);
 
-      GlobalLoop.remove(idA);
-      expect(GlobalLoop.length).toBe(1);
+      Loop::global->remove(idA);
+      expect(Loop::global->length).toBe(1);
 
-      GlobalLoop.loop();
+      Loop::global->loop();
       expect(a).toBe(2);
       expect(b).toBe(4);
 
-      GlobalLoop.remove(idB);
-      expect(GlobalLoop.length).toBe(0);
+      Loop::global->remove(idB);
+      expect(Loop::global->length).toBe(0);
     });
   });
 

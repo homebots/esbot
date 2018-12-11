@@ -1,3 +1,6 @@
+
+#define WEBSOCKETSCLIENT_H_
+
 typedef enum {
     WStype_ERROR,
     WStype_DISCONNECTED,

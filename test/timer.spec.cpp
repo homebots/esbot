@@ -3,7 +3,7 @@
 #include "mock/time.mock.cpp"
 #include "assert.h"
 #include "loop.cpp"
-#include "protocol/timer.cpp"
+#include "timer.cpp"
 
 int main() {
   describe("timer", []{
@@ -16,19 +16,19 @@ int main() {
       Timer timer(3, test);
       timer.start();
 
-      tick(); GlobalLoop.loop();
+      tick(); Loop::loop();
       expect(iterations).toBe(0);
       expect(millis()).toBe(2);
 
-      tick(); GlobalLoop.loop();
-      tick(); GlobalLoop.loop();
-      tick(); GlobalLoop.loop();
+      tick(); Loop::loop();
+      tick(); Loop::loop();
+      tick(); Loop::loop();
       expect(iterations).toBe(1);
       expect(millis()).toBe(5);
 
-      tick(); GlobalLoop.loop();
-      tick(); GlobalLoop.loop();
-      tick(); GlobalLoop.loop();
+      tick(); Loop::loop();
+      tick(); Loop::loop();
+      tick(); Loop::loop();
       expect(iterations).toBe(2);
       expect(millis()).toBe(8);
     });

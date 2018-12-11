@@ -7,6 +7,9 @@
 
 #include <Arduino.h>
 #include <WebSocketsClient.h>
+#include "./stream-reader.cpp"
+#include "./stream-writer.cpp"
+// #include "./timer.cpp"
 
 typedef enum {
   BiNoop = 0x01,
@@ -21,7 +24,7 @@ typedef enum {
   BiDebug = 0x0a,
 } InstructionCode;
 
-class Instructions {
+class InstructionRunner {
   public:
     WebSocketsClient* webSocket;
     StreamWriter output;
@@ -30,7 +33,7 @@ class Instructions {
       webSocket = socket;
     }
 
-    void parseInstruction(unsigned char* byteStream) {
+    void run(unsigned char* byteStream) {
       StreamReader reader(byteStream);
       char id = reader.readByte();
 
@@ -138,11 +141,14 @@ class Instructions {
       digitalWrite(pin, LOW);
     }
 
+    void loop() {}
+
   private:
     void sendOutput() {
       unsigned char* bytes = output.getStream();
       webSocket->sendBIN(bytes, strlen((const char*)bytes));
     }
+
 };
 
 #endif

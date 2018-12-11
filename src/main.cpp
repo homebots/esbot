@@ -1,6 +1,9 @@
-#include "loop.cpp"
-#include "protocol/main.cpp"
-#include "debug.h"
+#ifndef _BOT_PROTOCOL_
+#define _BOT_PROTOCOL_
+
+#ifndef DEBUG
+#define DEBUG(...)
+#endif
 
 #ifndef _ASSERT_CPP_
 #include <Arduino.h>
@@ -9,26 +12,23 @@
 #include <WebSocketsClient.h>
 #endif
 
-#ifndef WIFI_SSID
-const char* WIFI_SSID = "HomeBots";
-const char* WIFI_KEY = "HomeBots";
-#endif
+#include "./debug.h"
+#include "./instruction-runner.cpp"
 
-class MainController: public LoopCallable {
+class MainController {
   public:
     WebSocketsClient webSocket;
     ESP8266WiFiMulti wifi;
-    Instructions input;
+    InstructionRunner instructions;
 
   void setup() {
     this->setupWifi();
     this->setupWebSocket();
-
-    GlobalLoop.add(this);
   }
 
   void loop() {
     webSocket.loop();
+    instructions.loop();
   }
 
   void setupWebSocket() {
@@ -52,12 +52,15 @@ class MainController: public LoopCallable {
       }
     });
 
-    input.setSocket(&webSocket);
+    instructions.setSocket(&webSocket);
   }
 
   void setupWifi() {
     wifi.addAP("HomeBots", "HomeBots");
+
+#ifdef WIFI_SSID
     wifi.addAP(WIFI_SSID, WIFI_KEY);
+#endif
 
     while (this->wifi.run() != WL_CONNECTED) {
       DEBUG(".");
@@ -74,6 +77,8 @@ class MainController: public LoopCallable {
   }
 
   void onMessageReceived(uint8_t* stream) {
-    input.parseInstruction(stream);
+    instructions.run(stream);
   }
 };
+
+#endif

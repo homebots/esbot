@@ -1,3 +1,5 @@
+#define Arduino_h
+
 unsigned char LED_BUILTIN = 5;
 unsigned char LOW = 0x00;
 unsigned char HIGH = 0x01;

@@ -5,20 +5,16 @@
 #define DEBUG(...)
 #endif
 
-// typedef unsigned int size_t;
-
-#ifndef _ASSERT_CPP_
 #include <stdlib.h>
 #include <string.h>
-#endif
-
-void copyBytes(unsigned char* target, unsigned char* source, size_t amount) {
-  for (int i = 0; i < amount; i++) {
-    target[i] = source[i];
-  }
-}
 
 class StreamReader {
+  void copyBytes(unsigned char* target, unsigned char* source, size_t amount) {
+    for (int i = 0; i < amount; i++) {
+      target[i] = source[i];
+    }
+  }
+
   public:
     unsigned char *stream;
 

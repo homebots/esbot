@@ -16,5 +16,5 @@ void setup() {
 }
 
 void loop() {
-  GlobalLoop.loop();
+  ctrl.loop();
 }
