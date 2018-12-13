@@ -1,10 +1,6 @@
 #ifndef _BOT_PROTOCOL_
 #define _BOT_PROTOCOL_
 
-#ifndef DEBUG
-#define DEBUG(...)
-#endif
-
 #ifndef _ASSERT_CPP_
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -22,8 +18,15 @@ class MainController {
     InstructionRunner instructions;
 
   void setup() {
+    unsigned char* macAddress = (unsigned char*)malloc(18);
     this->setupWifi();
     this->setupWebSocket();
+
+    WiFi.macAddress().getBytes(macAddress, 18);
+    instructions.setUid(macAddress);
+
+    instructions.writePin(0, false, 0);
+    instructions.writePin(2, false, 0);
   }
 
   void loop() {
@@ -38,13 +41,11 @@ class MainController {
     webSocket.onEvent([&](WStype_t type, uint8_t* message, size_t length) {
       switch(type) {
         case WStype_CONNECTED:
-          DEBUG("> %s:2021/z\n", message);
           delay(100);
-          sendIdentity();
           break;
 
         case WStype_BIN:
-          onMessageReceived(message);
+          instructions.run(message);
           break;
 
         default:
@@ -68,16 +69,6 @@ class MainController {
     }
 
     DEBUG("Connected to WiFi\n");
-  }
-
-  void sendIdentity() {
-    // unsigned char macAddress[18];
-    // wifi.macAddress().getBytes(macAddress, 18);
-    // webSocket.sendTXT(strcat((char*) "bot::", (char*) macAddress));
-  }
-
-  void onMessageReceived(uint8_t* stream) {
-    instructions.run(stream);
   }
 };
 

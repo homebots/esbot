@@ -5,9 +5,9 @@
 #include "protocol/stream/main.cpp"
 
 int main() {
-  describe("StreamWriter", []{
+  describe("StreamEncoder", []{
     it("should store booleans", []{
-      StreamWriter writer;
+      StreamEncoder writer;
 
       writer.writeBool(true);
       writer.writeBool(false);
@@ -19,7 +19,7 @@ int main() {
     });
 
     it("should store small numbers (0..255)", []{
-      StreamWriter writer;
+      StreamEncoder writer;
       const char* bytes = "42";
 
       writer.writeByte(bytes[0]);
@@ -38,7 +38,7 @@ int main() {
     });
 
     it("should store big numbers (0..65535)", []{
-      StreamWriter writer;
+      StreamEncoder writer;
       const char* expected = "000000ff0400ffff";
 
       writer.writeNumber(0);
@@ -51,7 +51,7 @@ int main() {
     });
 
     it("should store strings", []{
-      StreamWriter writer;
+      StreamEncoder writer;
       const char* expected = "dead""beef";
 
       writer.writeString("dead");
@@ -62,7 +62,7 @@ int main() {
     });
 
     it("should reset after returning byte stream", []{
-      StreamWriter writer;
+      StreamEncoder writer;
       const char* dead = "dead";
       const char* beef = "beef";
 

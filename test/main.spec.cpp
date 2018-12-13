@@ -1,5 +1,3 @@
-// #define DEBUG(...) printf(__VA_ARGS__);
-
 #include "assert.h"
 #include <string.h>
 #include "mock/arduino.mock.cpp"

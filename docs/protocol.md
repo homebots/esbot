@@ -28,14 +28,15 @@ Each message sent to esbot has the shape of:
 |--|--|--|--|
 | 0x01 | NOOP           | NULL | no-op signal to test connection |
 | 0x02 | RESET          | NULL | reset board |
-| 0x03 | PING           | NULL | ping the ESP and asks for a pong |
-| 0x04 | WRITE          | `byte` pin, `bool` on | flip a pin to on or off |
-| 0x05 | READ           | `byte` pin, `bool` analog | read value of pin |
-| 0x06 | ANALOG_WRITE   | `byte` pin, `number` value | write analog value to pin |
-| 0x07 | READ_STREAM    | `byte` pin, `byte` interval, `number` times, `number` bufferSize | read `samples` samples from `pin`, every `interval` ms, sending a new message every `bufferSize` samples |
-| 0x08 | WRITE_STREAM   | `byte` pin, `byte` interval, `number` length, `string` buffer | read `samples` samples from `pin`, every `interval` ms, sending a new message every `bufferSize` samples |
-| 0x09 | STOP_STREAM    | `byte` pin | stop streaming from `pin` |
-| 0x0a | DEBUG          | `bool` on | start/stop Serial debug messages |
+| 0x03 | DEBUG          | `bool` on | start/stop Serial debug messages |
+| 0x04 | PING           | NULL | ping the ESP and asks for a pong |
+| 0x05 | WRITE          | `byte` pin, `bool` on | flip a pin to on or off |
+| 0x06 | READ           | `byte` pin, `bool` analog | read value of pin |
+| 0x07 | ANALOG_WRITE   | `byte` pin, `number` value | write analog value to pin |
+| 0x08 | READ_STREAM    | `byte` pin, `number` frequency, `number` bufferSize | read `samples` samples from `pin`, every `interval` ms, flushing every `bufferSize` samples |
+| 0x09 | WRITE_STREAM   | `byte` pin, `byte` interval, `string` buffer | read `samples` samples from `pin`, every `interval` us |
+| 0x0a | STOP_READ_STREAM  | NULL | stop streaming from `pin` |
+| 0x0a | STOP_WRITE_STREAM  | NULL | stop streaming from `pin` |
 
 # Responses
 

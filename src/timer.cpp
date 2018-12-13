@@ -3,41 +3,28 @@
 
 #include <Arduino.h>
 #include <stdlib.h>
-#include "./loop.h"
+#include "./timer.h"
 
-class Timer: public LoopCallable {
-  protected:
-    int interval;
-    int nextTick;
-    bool running = false;
-    void (*callback)();
+void Timer::start() {
+  nextTick = micros() + interval;
+  running = true;
+}
 
-  public:
-    Timer(int interval, void (*cb)()):
-      interval(interval),
-      callback(cb) {}
+void Timer::stop() {
+  running = false;
+}
 
-    void start() {
-      nextTick = millis() + interval;
-      running = true;
-    }
+void Timer::setInterval(unsigned long newInterval) {
+  interval = newInterval;
+}
 
-    void stop() {
-      running = false;
-    }
+void Timer::loop() {
+  if (this->running == false) return;
 
-    void setInterval(int newInterval) {
-      interval = newInterval;
-    }
-
-    void loop() {
-      if (this->running == false) return;
-
-      if (millis() > nextTick) {
-        nextTick += interval;
-        this->callback();
-      }
-    }
-};
+  if (micros() > nextTick) {
+    nextTick += interval;
+    tick();
+  }
+}
 
 #endif

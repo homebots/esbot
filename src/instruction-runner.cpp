@@ -1,36 +1,41 @@
 #ifndef _INSTRUCTIONS_
 #define _INSTRUCTIONS_
 
-#ifndef DEBUG
-#define DEBUG(...)
-#endif
-
 #include <Arduino.h>
 #include <WebSocketsClient.h>
-#include "./stream-reader.cpp"
-#include "./stream-writer.cpp"
-// #include "./timer.cpp"
+#include "./stream-reader.h"
+#include "./stream-encoder.h"
+#include "./read-stream.cpp"
+#include "./write-stream.cpp"
 
 typedef enum {
   BiNoop = 0x01,
   BiReset = 0x02,
-  BiPing = 0x03,
-  BiWrite = 0x04,
-  BiRead = 0x05,
+  BiDebug = 0x03,
+  BiPing = 0x04,
+  BiWrite = 0x05,
   BiAnalogWrite = 0x06,
-  BiReadStream = 0x07,
-  BiWriteStream = 0x08,
-  BiStopStream = 0x09,
-  BiDebug = 0x0a,
+  BiRead = 0x07,
+  BiReadStream = 0x08,
+  BiWriteStream = 0x09,
+  BiStopReadStream = 0x0a,
+  BiStopWriteStream = 0x0b
 } InstructionCode;
 
 class InstructionRunner {
   public:
     WebSocketsClient* webSocket;
-    StreamWriter output;
+    StreamEncoder output;
+    ReadStream readStream;
+    WriteStream writeStream;
+    unsigned char* uid;
 
     void setSocket(WebSocketsClient* socket) {
       webSocket = socket;
+    }
+
+    void setUid(unsigned char* uniqueId) {
+      uid = uniqueId;
     }
 
     void run(unsigned char* byteStream) {
@@ -44,6 +49,16 @@ class InstructionRunner {
 
         case BiReset:
           this->reset();
+          break;
+
+        case BiDebug:
+          this->debug(
+            reader.readBool()
+          );
+          break;
+
+        case BiPing:
+          this->pong();
           break;
 
         case BiWrite:
@@ -62,9 +77,27 @@ class InstructionRunner {
           );
           break;
 
-        case BiDebug:
-          this->debug(
-            reader.readBool()
+        case BiReadStream:
+          this->startReadStream(
+            reader.readByte(),
+            reader.readLong(),
+            reader.readLong()
+          );
+          break;
+
+        case BiStopReadStream:
+          this->stopReadStream();
+          break;
+
+        case BiStopWriteStream:
+          this->stopWriteStream();
+          break;
+
+        case BiWriteStream:
+          this->startWriteStream(
+            reader.readByte(),
+            reader.readLong(),
+            byteStream + 6
           );
           break;
       }
@@ -73,6 +106,12 @@ class InstructionRunner {
     void noop() {
       output.writeByte(BiNoop);
       output.writeByte(0x01);
+      sendOutput();
+    }
+
+    void pong() {
+      output.writeByte(BiPing);
+      output.writeString((const char*)uid);
       sendOutput();
     }
 
@@ -129,7 +168,7 @@ class InstructionRunner {
       DEBUG("Write %d %d", pin, value);
 
       if (isAnalog) {
-        analogWrite(pin, value);
+        analogWrite(pin, constrain(value, 1, PWMRANGE));
         return;
       }
 
@@ -141,12 +180,47 @@ class InstructionRunner {
       digitalWrite(pin, LOW);
     }
 
-    void loop() {}
+    void startReadStream(unsigned char pin, unsigned long frequency, unsigned long bufferSize) {
+      pinMode(pin, INPUT);
+      readStream.setPin(pin);
+      readStream.setInterval(frequency);
+      readStream.setBufferSize(bufferSize);
+      readStream.start();
+    }
+
+    void stopReadStream() {
+      readStream.stop();
+      readStream.reset(BiReadStream);
+    }
+
+    void stopWriteStream() {
+      writeStream.stop();
+      writeStream.reset();
+    }
+
+    void startWriteStream(unsigned char pin, unsigned long frequency, unsigned char* bytes) {
+      writeStream.setPin(pin);
+      writeStream.setInterval(frequency);
+      writeStream.reset();
+      writeStream.write(bytes);
+    }
+
+    void loop() {
+      writeStream.loop();
+      readStream.loop();
+
+      if (readStream.isFull()) {
+        unsigned long length = readStream.getLength();
+        webSocket->sendBIN(readStream.output.getStream(), length);
+        readStream.reset(BiReadStream);
+      }
+    }
 
   private:
     void sendOutput() {
       unsigned char* bytes = output.getStream();
       webSocket->sendBIN(bytes, strlen((const char*)bytes));
+      free(bytes);
     }
 
 };

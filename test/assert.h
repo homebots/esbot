@@ -1,10 +1,7 @@
 #ifndef _ASSERT_CPP_
 #define _ASSERT_CPP_
 
-#ifndef DEBUG
-#define DEBUG(...)
-#endif
-
+#include "./debug.h"
 #include <string.h>
 #include <stdlib.h>
 #include <iostream>
